@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login Page</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #1a1a1a;
+            color: #333;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            overflow-x: hidden;
+            height: 100vh;
+            cursor: none;
+        }
+
+        .nav {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: fixed;
+            top: 0;
+            width: 100%;
+            background-color: #1e1e1e;
+            padding: 10px 0;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+            z-index: 1;
+        }
+
+        .nav ul {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            gap: 20px;
+        }
+
+        .nav li {
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .nav li:hover {
+            background-color: #333333;
+        }
+
+        .nav a {
+            text-decoration: none;
+            color: #ffffff;
+            font-size: 18px;
+        }
+
+        .cursor-circle {
+            position: absolute;
+            width: 50px;
+            height: 50px;
+            border: 2px solid yellow;
+            border-radius: 50%;
+            pointer-events: none;
+            transform: translate(-50%, -50%);
+            z-index: 10000;
+        }
+
+        .cursor-dot {
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            background-color: yellow;
+            border-radius: 50%;
+            pointer-events: none;
+            transform: translate(-50%, -50%);
+            z-index: 10000;
+        }
+
+        button, input[type="file"], input[type="text"], input[type="password"], input[type="submit"], a {
+            cursor: none;
+        }
+
+        .login-container {
+            background-color: #333;
+            padding: 130px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            text-align: center;
+            margin-top: 100px; 
+        }
+
+        .login-container h2 {
+            color: #fff;
+            margin-bottom: 30px;
+            margin-top: -20px;
+            font-size: 45px; 
+            font-weight: bold;
+        }
+        .login-container h1 {
+            margin-top: -20px;
+            color: #fff;
+            font-size: 50px; 
+            font-weight: bold;
+        }
+
+        .login-container input[type="text"],
+        .login-container input[type="password"] {
+            width: 94%;
+            padding: 0.75rem;
+            margin: 0.5rem 0;
+            border: 1px solid #555;
+            border-radius: 4px;
+            background-color: #555;
+            color: #fff;
+            font-size: 20px;
+        }
+
+        .login-container input[type="submit"] {
+            width: 100%;
+            padding: 0.75rem;
+            margin: 1rem 0;
+            border: none;
+            border-radius: 4px;
+            background-color: #007bff;
+            color: #fff;
+            cursor: pointer;
+            font-size: 25px; 
+            font-weight: bold; 
+        }
+
+        .login-container input[type="submit"]:hover {
+            background-color: #0056b3;
+            cursor: none;
+        }
+
+        .login-container a {
+            color: #007bff;
+            text-decoration: none;
+            display: block;
+            margin-top: 1rem;
+        }
+
+        .login-container a:hover {
+            text-decoration: underline;
+            cursor: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <h1>雄工</h1>
+        <h2>體育器材登記系統</h2>
+        <form action="#" method="post">
+            <input type="text" name="username" placeholder="Username" required>
+            <input type="password" name="password" placeholder="Password" required>
+            <input type="submit" value="登入" class="submit-btn">
+        </form>
+        <!-- <a href="#">Forgot your password?</a> -->
+    </div>
+    <div class="cursor-circle"></div>
+    <div class="cursor-dot"></div>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const cursorCircle = document.querySelector('.cursor-circle');
+            const cursorDot = document.querySelector('.cursor-dot');
+
+            document.addEventListener('mousemove', (e) => {
+                cursorCircle.style.left = e.pageX + 'px';
+                cursorCircle.style.top = e.pageY + 'px';
+                cursorDot.style.left = e.pageX + 'px';
+                cursorDot.style.top = e.pageY + 'px';
+            });
+
+            document.querySelectorAll('button, input[type="file"], input[type="text"], input[type="password"], input[type="submit"], a').forEach(el => {
+                el.addEventListener('mouseenter', () => {
+                    cursorCircle.style.display = 'block';
+                    cursorDot.style.display = 'block';
+                    document.body.style.cursor = 'none';
+                });
+                el.addEventListener('mouseleave', () => {
+                    cursorCircle.style.display = 'block';
+                    cursorDot.style.display = 'block';
+                    document.body.style.cursor = 'none';
+                });
+            });
+        });
+    </script>
+</body>
+</html>

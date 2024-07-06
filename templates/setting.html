@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>人員管理</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='setting.css') }}">
+</head>
+<body>
+    <div class="nav">
+        <ul>
+            <li><a href="#">使用</a></li>
+            <li><a href="#">設定</a></li>
+            <li><a href="#">新增</a></li>
+        </ul>
+    </div>
+    <div class="container">
+        <center><h2>人員管理</h2></center>
+        <ul id="userList" class="user-list">
+            {% for user in users %}
+                <li>
+                    {{ user[3] }} ({{ user[1] }}) - {{ user[4] }}
+                    <button class="edit-btn" data-id="{{ user[0] }}">編輯</button>
+                </li>
+            {% endfor %}
+        </ul>
+        <center><button id="addUserBtn" class="btn">新增人員</button></center>
+    </div>
+
+    <div id="addUserModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>新增人員權限</h2>
+            <form id="addUserForm">
+                <div class="form-group">
+                    <label for="username">帳號</label>
+                    <input type="text" id="username" name="username" required>
+                </div>
+                <div class="form-group">
+                    <label for="password">密碼</label>
+                    <input type="password" id="password" name="password" required>
+                </div>
+                <div class="form-group">
+                    <label for="name">名稱</label>
+                    <input type="text" id="name" name="name" required>
+                </div>
+                <div class="form-group">
+                    <label for="role">身份</label>
+                    <select id="role" name="role" required>
+                        <option value="管理員">管理員</option>
+                        <option value="編輯者">編輯者</option>
+                        <option value="查看者">查看者</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn">新增</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="editUserModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>編輯人員權限</h2>
+            <form id="editUserForm">
+                <div class="form-group">
+                    <label for="edit-username">帳號</label>
+                    <input type="text" id="edit-username" name="username" required>
+                </div>
+                <div class="form-group">
+                    <label for="edit-password">密碼</label>
+                    <input type="password" id="edit-password" name="password" required>
+                </div>
+                <div class="form-group">
+                    <label for="edit-name">名稱</label>
+                    <input type="text" id="edit-name" name="name" required>
+                </div>
+                <div class="form-group">
+                    <label for="edit-role">身份</label>
+                    <select id="edit-role" name="role" required>
+                        <option value="管理員">管理員</option>
+                        <option value="編輯者">編輯者</option>
+                        <option value="查看者">查看者</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn">儲存</button>
+                <button type="button" id="deleteUserBtn" class="btn" style="background-color: #ff4d4d;">刪除</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="cursor-circle"></div>
+    <div class="cursor-dot"></div>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const userList = document.getElementById('userList');
+            const addUserBtn = document.getElementById('addUserBtn');
+            const addUserModal = document.getElementById('addUserModal');
+            const editUserModal = document.getElementById('editUserModal');
+            const closeBtns = document.querySelectorAll('.close');
+            const addUserForm = document.getElementById('addUserForm');
+            const editUserForm = document.getElementById('editUserForm');
+            const deleteUserBtn = document.getElementById('deleteUserBtn');
+            const cursorCircle = document.querySelector('.cursor-circle');
+            const cursorDot = document.querySelector('.cursor-dot');
+
+            let currentEditId = null;
+
+            const addUserUrl = '{{ add_user_url }}';
+            const editUserUrlTemplate = '{{ edit_user_url_template }}';
+            const deleteUserUrlTemplate = '{{ delete_user_url_template }}';
+            const getUsersUrl = '{{ get_users_url }}';
+            const getUserUrlTemplate = '{{ get_user_url_template }}';
+
+            async function fetchUsers() {
+                const response = await fetch(getUsersUrl);
+                const users = await response.json();
+                renderUsers(users);
+            }
+
+            function renderUsers(users) {
+                userList.innerHTML = '';
+                users.forEach((user) => {
+                    const li = document.createElement('li');
+                    li.innerHTML = `
+                        ${user.name} (${user.username}) - ${user.role}
+                        <button class="edit-btn" data-id="${user.id}">編輯</button>
+                    `;
+                    userList.appendChild(li);
+                });
+
+                document.querySelectorAll('.edit-btn').forEach(button => {
+                    button.addEventListener('click', async (e) => {
+                        const id = e.target.getAttribute('data-id');
+                        currentEditId = id;
+                        const response = await fetch(getUserUrlTemplate.replace('{user_id}', id));
+                        const user = await response.json();
+                        document.getElementById('edit-username').value = user.username;
+                        document.getElementById('edit-password').value = ""; // 置空密码字段，防止显示加密后的密码
+                        document.getElementById('edit-name').value = user.name;
+                        document.getElementById('edit-role').value = user.role;
+                        editUserModal.style.display = 'flex';
+                    });
+                });
+            }
+
+            addUserBtn.addEventListener('click', () => {
+                addUserModal.style.display = 'flex';
+            });
+
+            closeBtns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    addUserModal.style.display = 'none';
+                    editUserModal.style.display = 'none';
+                });
+            });
+
+            addUserForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const username = document.getElementById('username').value;
+                const password = document.getElementById('password').value;
+                const name = document.getElementById('name').value;
+                const role = document.getElementById('role').value;
+                await fetch(addUserUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ username, password, name, role })
+                });
+                fetchUsers();
+                addUserModal.style.display = 'none';
+                addUserForm.reset();
+            });
+
+            editUserForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const username = document.getElementById('edit-username').value;
+                const password = document.getElementById('edit-password').value;
+                const name = document.getElementById('edit-name').value;
+                const role = document.getElementById('edit-role').value;
+                await fetch(editUserUrlTemplate.replace('{user_id}', currentEditId), {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ username, password, name, role })
+                });
+                fetchUsers();
+                editUserModal.style.display = 'none';
+                editUserForm.reset();
+            });
+
+            deleteUserBtn.addEventListener('click', async () => {
+                await fetch(deleteUserUrlTemplate.replace('{user_id}', currentEditId), {
+                    method: 'POST'
+                });
+                fetchUsers();
+                editUserModal.style.display = 'none';
+                editUserForm.reset();
+            });
+
+            window.addEventListener('click', (e) => {
+                if (e.target === addUserModal) {
+                    addUserModal.style.display = 'none';
+                }
+                if (e.target === editUserModal) {
+                    editUserModal.style.display = 'none';
+                }
+            });
+
+            fetchUsers();
+
+            document.addEventListener('mousemove', (e) => {
+                cursorCircle.style.left = `${e.clientX - 25}px`;
+                cursorCircle.style.top = `${e.clientY - 25}px`;
+                cursorDot.style.left = `${e.clientX - 4}px`;
+                cursorDot.style.top = `${e.clientY - 4}px`;
+            });
+
+            document.querySelectorAll('button, input[type="file"], input[type="text"], input[type="password"], input[type="submit"], a, li, input, label, select').forEach(el => {
+                el.addEventListener('mouseenter', () => {
+                    cursorCircle.style.display = 'block';
+                    cursorDot.style.display = 'block';
+                    document.body.style.cursor = 'none';
+                });
+                el.addEventListener('mouseleave', () => {
+                    cursorCircle.style.display = 'block';
+                    cursorDot.style.display = 'block';
+                    document.body.style.cursor = 'none';
+                });
+            });
+        });
+    </script>
+</body>
+</html>
